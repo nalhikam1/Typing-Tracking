@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy Typing Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset and Basic Setup */
+        :root {
+            --primary-color: #ffffff;
+            --secondary-color: #a0a0c0;
+            --background-color: #0c0c1e;
+            --card-background: rgba(20, 20, 40, 0.7);
+            --border-color: rgba(100, 100, 220, 0.5);
+            --accent-color: #4d5bce;
+            --accent-hover: #6776f7;
+            --success-color: #39d353;
+            --danger-color: #f85149;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--primary-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Galaxy Background Animation */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        @function multiple-box-shadow($n) {
+            $value: '#{random(2000)}px #{random(2000)}px #FFF';
+            @for $i from 2 through $n {
+                $value: '#{$value} , #{random(2000)}px #{random(2000)}px #FFF';
+            }
+            @return unquote($value);
+        }
+
+        $shadows-small: multiple-box-shadow(700);
+        $shadows-medium: multiple-box-shadow(200);
+        $shadows-big: multiple-box-shadow(100);
+
+        #stars1 {
+            width: 1px;
+            height: 1px;
+            background: transparent;
+            box-shadow: $shadows-small;
+            animation: animStar 50s linear infinite;
+        }
+
+        #stars2 {
+            width: 2px;
+            height: 2px;
+            background: transparent;
+            box-shadow: $shadows-medium;
+            animation: animStar 100s linear infinite;
+        }
+
+        #stars3 {
+            width: 3px;
+            height: 3px;
+            background: transparent;
+            box-shadow: $shadows-big;
+            animation: animStar 150s linear infinite;
+        }
+
+        @keyframes animStar {
+            from {
+                transform: translateY(0px);
+            }
+            to {
+                transform: translateY(-2000px);
+            }
+        }
+
+        /* Main Application Container */
+        .app-container {
+            width: 90%;
+            max-width: 900px;
+            height: 90vh;
+            max-height: 700px;
+            background: var(--card-background);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(77, 91, 206, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 15px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 1.5em;
+            font-weight: 600;
+            background: linear-gradient(90deg, #a0a0c0, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        nav button {
+            background: none;
+            border: 1px solid transparent;
+            color: var(--secondary-color);
+            padding: 8px 15px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+        
+        nav button.active {
+            color: var(--primary-color);
+            background-color: rgba(77, 91, 206, 0.3);
+            border-color: var(--accent-color);
+        }
+
+        nav button:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Main Content Area */
+        main {
+            flex-grow: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        /* Hide views by default */
+        .view {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+        .view.active {
+            display: flex;
+        }
+
+        /* Tracker View */
+        #tracker-view {
+            gap: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+            gap: 15px;
+        }
+
+        .stat-item {
+            flex: 1;
+        }
+
+        .stat-item h3 {
+            font-size: 0.9em;
+            color: var(--secondary-color);
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+
+        .stat-item p {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        textarea#typing-area {
+            flex-grow: 1;
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.1em;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        textarea#typing-area:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(77, 91, 206, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .controls button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        #start-btn { background-color: var(--accent-color); }
+        #start-btn:hover { background-color: var(--accent-hover); }
+        #start-btn:disabled { background-color: #555; cursor: not-allowed; }
+
+        #stop-btn { background-color: var(--success-color); }
+        #stop-btn:hover { background-color: #4be665; }
+        #stop-btn:disabled { background-color: #555; cursor: not-allowed; }
+
+        /* History View */
+        #history-view {
+            overflow-y: auto;
+            padding-right: 10px; /* for scrollbar */
+        }
+        
+        #history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .history-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--secondary-color);
+            font-size: 0.9em;
+        }
+
+        .history-item-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 0;
+        }
+        
+        .history-item-text {
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: pre-wrap;
+            color: #ccc;
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        .history-item-text.expanded {
+            max-height: none;
+        }
+
+        .history-item-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .history-item-actions button {
+            padding: 6px 12px;
+            font-size: 0.8em;
+            border: 1px solid;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            background: transparent;
+        }
+
+        .copy-btn { color: var(--accent-color); border-color: var(--accent-color); }
+        .copy-btn:hover { background-color: rgba(77, 91, 206, 0.2); }
+
+        .delete-btn { color: var(--danger-color); border-color: var(--danger-color); }
+        .delete-btn:hover { background-color: rgba(248, 81, 73, 0.2); }
+        
+        #no-history {
+            text-align: center;
+            color: var(--secondary-color);
+            margin-top: 50px;
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        main::-webkit-scrollbar, #history-view::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        main::-webkit-scrollbar-track, #history-view::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        main::-webkit-scrollbar-thumb, #history-view::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+
+        main::-webkit-scrollbar-thumb:hover, #history-view::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stars">
+        <div id="stars1"></div>
+        <div id="stars2"></div>
+        <div id="stars3"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <h1>Galaxy Typing Tracker</h1>
+            <nav>
+                <button id="nav-tracker" class="active">Tracker</button>
+                <button id="nav-history">Riwayat</button>
+            </nav>
+        </header>
+
+        <main>
+            <!-- Typing Tracker View -->
+            <div id="tracker-view" class="view active">
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <h3>WAKTU</h3>
+                        <p id="timer">00:00</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>JUMLAH KATA</h3>
+                        <p id="word-count">0</p>
+                    </div>
+                    <div class="stat-item">
+                        <h3>WPM</h3>
+                        <p id="wpm">0</p>
+                    </div>
+                </div>
+                <textarea id="typing-area" placeholder="Klik 'Mulai Menulis' lalu ketik di sini..."></textarea>
+                <div class="controls">
+                    <button id="start-btn">Mulai Menulis</button>
+                    <button id="stop-btn" disabled>Selesai & Simpan</button>
+                </div>
+            </div>
+
+            <!-- History View -->
+            <div id="history-view" class="view">
+                <div id="history-list">
+                    <!-- History items will be injected here by JavaScript -->
+                </div>
+                 <p id="no-history" style="display: none;">Belum ada riwayat tulisan yang tersimpan.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const navTrackerBtn = document.getElementById('nav-tracker');
+            const navHistoryBtn = document.getElementById('nav-history');
+            const trackerView = document.getElementById('tracker-view');
+            const historyView = document.getElementById('history-view');
+
+            const typingArea = document.getElementById('typing-area');
+            const startBtn = document.getElementById('start-btn');
+            const stopBtn = document.getElementById('stop-btn');
+
+            const timerEl = document.getElementById('timer');
+            const wordCountEl = document.getElementById('word-count');
+            const wpmEl = document.getElementById('wpm');
+            
+            const historyList = document.getElementById('history-list');
+            const noHistoryMsg = document.getElementById('no-history');
+
+            // State variables
+            let timer;
+            let startTime;
+            let elapsedTime = 0;
+            let isRunning = false;
+            let history = JSON.parse(localStorage.getItem('typingHistory')) || [];
+
+            // --- Navigation ---
+            function switchView(viewToShow) {
+                trackerView.classList.remove('active');
+                historyView.classList.remove('active');
+                navTrackerBtn.classList.remove('active');
+                navHistoryBtn.classList.remove('active');
+
+                if (viewToShow === 'tracker') {
+                    trackerView.classList.add('active');
+                    navTrackerBtn.classList.add('active');
+                } else {
+                    historyView.classList.add('active');
+                    navHistoryBtn.classList.add('active');
+                    renderHistory();
+                }
+            }
+
+            navTrackerBtn.addEventListener('click', () => switchView('tracker'));
+            navHistoryBtn.addEventListener('click', () => switchView('history'));
+
+            // --- Core Tracker Logic ---
+            
+            function startTracking() {
+                if (isRunning) return;
+
+                isRunning = true;
+                startTime = Date.now() - elapsedTime;
+                timer = setInterval(updateTimer, 1000);
+
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                typingArea.focus();
+            }
+
+            function stopTracking() {
+                if (!isRunning) return;
+
+                isRunning = false;
+                clearInterval(timer);
+                
+                const text = typingArea.value.trim();
+                const wordCount = calculateWordCount(text);
+                
+                if (wordCount > 0) {
+                    saveSession();
+                }
+
+                resetTracker();
+            }
+
+            function resetTracker() {
+                clearInterval(timer);
+                isRunning = false;
+                elapsedTime = 0;
+                
+                typingArea.value = '';
+                timerEl.textContent = '00:00';
+                wordCountEl.textContent = '0';
+                wpmEl.textContent = '0';
+
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+            }
+
+            function updateTimer() {
+                const currentTime = Date.now();
+                elapsedTime = currentTime - startTime;
+
+                const totalSeconds = Math.floor(elapsedTime / 1000);
+                const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+                const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+
+                timerEl.textContent = `${minutes}:${seconds}`;
+                updateStats();
+            }
+
+            function updateStats() {
+                const text = typingArea.value;
+                const wordCount = calculateWordCount(text);
+                const wpm = calculateWPM(wordCount, elapsedTime);
+
+                wordCountEl.textContent = wordCount;
+                wpmEl.textContent = wpm;
+            }
+
+            function calculateWordCount(text) {
+                if (text.trim() === '') return 0;
+                return text.trim().split(/\s+/).length;
+            }
+
+            function calculateWPM(wordCount, timeInMillis) {
+                if (wordCount === 0 || timeInMillis === 0) return 0;
+                const minutes = timeInMillis / 1000 / 60;
+                return Math.round(wordCount / minutes);
+            }
+
+            // Event Listeners for Tracker
+            startBtn.addEventListener('click', startTracking);
+            stopBtn.addEventListener('click', stopTracking);
+            typingArea.addEventListener('input', () => {
+                if(isRunning) {
+                   updateStats();
+                }
+            });
+
+
+            // --- History Logic ---
+
+            function saveSession() {
+                const text = typingArea.value.trim();
+                const wordCount = calculateWordCount(text);
+                const finalWPM = calculateWPM(wordCount, elapsedTime);
+                const duration = timerEl.textContent;
+
+                const session = {
+                    id: Date.now(),
+                    date: new Date().toLocaleString('id-ID'),
+                    text,
+                    wordCount,
+                    wpm: finalWPM,
+                    duration
+                };
+
+                history.unshift(session); // Add to the beginning of the array
+                localStorage.setItem('typingHistory', JSON.stringify(history));
+                alert('Sesi tulisan berhasil disimpan!');
+            }
+            
+            function renderHistory() {
+                historyList.innerHTML = '';
+                if (history.length === 0) {
+                    noHistoryMsg.style.display = 'block';
+                    return;
+                }
+                noHistoryMsg.style.display = 'none';
+
+                history.forEach(session => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    item.innerHTML = `
+                        <div class="history-item-header">
+                            <span>${session.date}</span>
+                        </div>
+                        <div class="history-item-stats">
+                            <div class="stat-item">
+                                <h3>DURASI</h3>
+                                <p>${session.duration}</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>KATA</h3>
+                                <p>${session.wordCount}</p>
+                            </div>
+                            <div class="stat-item">
+                                <h3>WPM</h3>
+                                <p>${session.wpm}</p>
+                            </div>
+                        </div>
+                        <p class="history-item-text">${session.text}</p>
+                        <div class="history-item-actions">
+                            <button class="copy-btn" data-id="${session.id}">Salin Teks</button>
+                            <button class="delete-btn" data-id="${session.id}">Hapus</button>
+                        </div>
+                    `;
+                    historyList.appendChild(item);
+                });
+            }
+            
+            historyList.addEventListener('click', (e) => {
+                const target = e.target;
+                const id = target.dataset.id;
+                
+                // Expand/collapse text
+                if (target.classList.contains('history-item-text')) {
+                    target.classList.toggle('expanded');
+                }
+
+                // Copy text
+                if (target.classList.contains('copy-btn')) {
+                    const session = history.find(s => s.id == id);
+                    if (session) {
+                        navigator.clipboard.writeText(session.text).then(() => {
+                            target.textContent = 'Tersalin!';
+                            setTimeout(() => {
+                                target.textContent = 'Salin Teks';
+                            }, 2000);
+                        }).catch(err => {
+                            alert('Gagal menyalin teks.');
+                            console.error('Copy failed', err);
+                        });
+                    }
+                }
+
+                // Delete item
+                if (target.classList.contains('delete-btn')) {
+                    if (confirm('Apakah Anda yakin ingin menghapus riwayat ini?')) {
+                        history = history.filter(s => s.id != id);
+                        localStorage.setItem('typingHistory', JSON.stringify(history));
+                        renderHistory();
+                    }
+                }
+            });
+
+            // Initial Load
+            switchView('tracker');
+        });
+    </script>
+</body>
+</html>
